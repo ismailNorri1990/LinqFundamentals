@@ -11,12 +11,27 @@ namespace Introduction
     {
         static void Main(string[] args)
         {
-            ShowLargesFilesWithoutLinq();
+            string path = @"C:\Windows";
+            ShowLargesFilesWithLinq(path);
+            Console.WriteLine("***");
+            ShowLargesFilesWithoutLinq(path);
+        }
+        
+        private static void ShowLargesFilesWithLinq(String path){
+            /*var query = from file in new DirectoryInfo(path).GetFiles()
+                        orderby file.Length descending
+                        select file;*/
+
+            var query = new DirectoryInfo(path).GetFiles().OrderByDescending(x => x.Length).Take(5);
+
+            foreach (var file in query/*.Take(5)*/)
+	{
+                Console.WriteLine($"{file.Name, -20} : {file.Length, 10:N0}");
+	}
         }
 
-        private static void ShowLargesFilesWithoutLinq()
+        private static void ShowLargesFilesWithoutLinq(String path)
         {
-            string path = @"C:\Windows";
             DirectoryInfo directoryInfo = new DirectoryInfo(path);
 
             FileInfo[] files = directoryInfo.GetFiles();
