@@ -12,78 +12,86 @@ namespace Cars
     {
         static void Main(string[] args)
         {
-            var cars = ProcessFile("fuel.csv");
+            var cars = ProcessCars("fuel.csv");
+            var manufacturers = ProcessManufacturers("manufacturers.csv");
+            
+            // Join Method with Query Syntax
 
             var query = from car in cars
-                        where car.Manufacturer == "BMW" && car.Year == 2016
+                        join manufacturer in manufacturers 
+                        on new { car.Manufacturer, car.Year } 
+                        equals 
+                        new { Manufacturer = manufacturer.Name, manufacturer.Year }
                         orderby car.Combined descending, car.Name ascending
                         select new {
                             car.Combined,
                             car.Name,
                             car.Year,
-                            car.Manufacturer
+                            manufacturer.HeadQuarters
                         };
 
+            //Join Method With extension method syntax
 
-            //Using SelectMany -- Flattening Data - Find All persons from different businessUnit
+            var query2 = cars.Join(manufacturers,
+                              c => new { c.Manufacturer, c.Year },
+                              m => new { Manufacturer = m.Name, m.Year }, (c, m) =>
+                               new
+                               {
+                                   Car = c,
+                                   Manufacturer = m
 
-            var query2 = cars.SelectMany(c => c.Name)
-                             .OrderBy(c => c); 
+                        //Creating Personalized anonymous object
+                                /* c.Combined,
+                                   c.Name,
+                                   c.Year,
+                                   m.HeadQuarters*/
+                               })
+                             .OrderByDescending(c => c.Car.Combined)
+                             .ThenBy(c => c.Car.Name);
 
-            
-                foreach (var @char in query2 )
-                {
-                    Console.WriteLine(@char);
-                }
 
-
-            //Return a Bool like All() , Contains()
-
-            var result = cars.Any(c => c.Manufacturer == "Ford");
-
-            Console.WriteLine(result);
-
-            //Working with Last() -  First() - FirstOrDefault - LastOrDefault
-            var top = cars.OrderByDescending(c => c.Combined)
-                             .ThenBy(c => c.Name)
-                             .Select(c=>c)
-                             .First(c => c.Manufacturer == "BMW" && c.Year == 2016);
-
-            Console.WriteLine(top.Name);
-                /*cars.OrderByDescending(x => x.Combined)
-                            .ThenBy(x => x.Name);*/    
-
-            foreach (var car in query.Take(10))
+            foreach (var car in query2.Take(10))
             {
-                Console.WriteLine($"{car.Manufacturer} : {car.Name} : {car.Year} : {car.Combined}");
-            }
+                Console.WriteLine($"{car.Manufacturer.HeadQuarters} : {car.Car.Name} : {car.Car.Year} : {car.Car.Combined}");
+            }           
         }
 
-        private static List<Car> ProcessFile(string path)
+        
+        private static List<Car> ProcessCars(string path)
         {
             var query = File.ReadAllLines(path)
                             .Skip(1)
                             .Where(l => l.Length > 1)
                             .ToCar();
-                
-                /*from line in File.ReadAllLines(path).Skip(1)
-                        where line.Length > 1
-                        select Car.ParseFromCsv(line);*/
 
             return query.ToList();
-
-
-            /*return File.ReadAllLines(path)
-                       .Skip(1)
-                       .Where(line => line.Length > 1)
-                       .Select(Car.ParseFromCsv)
-                       .ToList();*/
         }
+
+
+        private static List<Manufacturer> ProcessManufacturers(string path)
+        {
+            var query = File.ReadAllLines(path)
+                            .Skip(1)
+                            .Where(l => l.Length > 1)
+                            .Select(l => { 
+                                    var collumns = l.Split(',');
+                                    return new Manufacturer
+                                     {
+                                          Name = collumns[0],
+                                          HeadQuarters = collumns[1],
+                                          Year = int.Parse(collumns[2])
+                                      };
+                            });
+
+            return query.ToList();
+        }
+
     }
 
     public static class CarExtentions
     {
-        public static IEnumerable<Car> ToCar(this IEnumerable<string> source)
+        
+       public static IEnumerable<Car> ToCar(this IEnumerable<string> source)
         {
             foreach (var line in source)
             {
@@ -101,5 +109,7 @@ namespace Cars
                 };
             }
         }
+
     }
+
 }
