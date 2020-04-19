@@ -14,128 +14,23 @@ namespace Cars
         static void Main(string[] args)
         {
             CreateXml();
+            QueryXml();
 
-            //Working with ForEach
+            
+        }
+
+        private static void QueryXml()
+        {
+            var document = XDocument.Load("fuel.xml");
+            var query = from element in document.Element("Cars").Elements("Car")
+            where element.Attribute("Manufacturer").Value == "BMW"
+            select element.Attribute("Name").Value;
 
 
-            /*foreach (var record in records)
+            foreach (var name in query)
             {
-                var car = new XElement("Car",
-                                new XAttribute("Name", record.Name),
-                                new XAttribute("Combined", record.Combined),
-                                new XAttribute("Manufacturer",record.Manufacturer));
-                                
-
-                *//*car.Add(name);
-                 * 
-                car.Add(combined);*//*
-                cars.Add(car);
-            }*/
-
-
-
-            /*
-             * **********************
-             * Agregate Linq  implementation method 
-             * ************************
-             * 
-             * var manufacturers = ProcessManufacturers("manufacturers.csv");
-
-            var query = from car in cars
-                        group car by car.Manufacturer into carGroup
-                        select new
-                        {
-                            Name = carGroup.Key,
-                            Max = carGroup.Max(c => c.Combined),
-                            Min = carGroup.Min(c => c.Combined),
-                            Avg = carGroup.Average(c=>c.Combined)
-                        }
-                        into result
-                        orderby result.Max descending
-                        select result;
-
-            var query2 = cars.GroupBy(c => c.Manufacturer)
-                             .Select(g=>
-                             {
-                                 var results = g.Aggregate(new CarStatistics(),
-                                                               (acc, c) => acc.Accumulate(c),
-                                                               acc => acc.Compute());
-                                 return new
-                                 {
-                                     Name = g.Key,
-                                     Max = results.Max,
-                                     Min = results.Min,
-                                     Average = results.Average
-                                 };
-                             })
-                             .OrderByDescending(r=>r.Max);
-
-
-            foreach (var result in query2)
-            {
-                Console.WriteLine(result.Name);
-                Console.WriteLine($"\t Max: {result.Max} \n\t Min: {result.Min} \n\t Avr:{result.Average :N1}");
+                Console.WriteLine(name);
             }
-*/
-
-            /*
-             * *********************************************
-             * Selecting top 3 best performance car by countries
-             * *********************************************
-             * 
-             * var query = from manufacturer in manufacturers
-                        join car in cars on manufacturer.Name equals car.Manufacturer
-                        into carGroup
-                        select new
-                        {
-                            Manufacturer = manufacturer,
-                            Car = carGroup
-                        } 
-                        into result
-                        group result by result.Manufacturer.HeadQuarters;
-
-
-            var query2 = manufacturers.GroupJoin(cars, m => m.Name, c => c.Manufacturer, (m, g) => new { Manufacturer = m, Car = g }).GroupBy(m => m.Manufacturer.HeadQuarters);
-
-            foreach (var group in query2)
-            {
-                Console.WriteLine($"{group.Key}");
-                foreach (var car in group.SelectMany(g=>g.Car).OrderByDescending(c => c.Combined).Take(3))
-                {
-                    Console.WriteLine($"\t {car.Manufacturer} : {car.Name} : {car.Combined}");
-                }
-            }*/
-
-
-
-            /*
-             * *******************
-             * Selecting Two  Best performance car by manufacturer
-             * ********************
-             * 
-             * 
-             * var query = from manufacturer in manufacturers
-                        join car in cars on manufacturer.Name equals car.Manufacturer
-                        into carGroup
-                        orderby manufacturer.Name
-                        select new
-                        {
-                            Manufacturer = manufacturer,
-                            Car = carGroup
-                        };
-
-            var query2 = manufacturers.GroupJoin(cars,m=>m.Name,c=>c.Manufacturer, (m,g) => new {Manufacturer=m,Car=g}).OrderByDescending(m=>m.Manufacturer.Name);
-
-
-
-            foreach (var group in query2)
-            {
-                Console.WriteLine($" {group.Manufacturer.Name} {group.Manufacturer.HeadQuarters} ");
-                foreach (var car in group.Car.OrderByDescending(x=>x.Combined).Take(3))
-                {
-                    Console.WriteLine($"\t{car.Name} : {car.Combined}");
-                }
-            }*/
 
 
         }
