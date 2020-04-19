@@ -14,46 +14,27 @@ namespace Cars
         {
             var cars = ProcessCars("fuel.csv");
             var manufacturers = ProcessManufacturers("manufacturers.csv");
-            
-            // Join Method with Query Syntax
 
             var query = from car in cars
-                        join manufacturer in manufacturers 
-                        on new { car.Manufacturer, car.Year } 
-                        equals 
-                        new { Manufacturer = manufacturer.Name, manufacturer.Year }
-                        orderby car.Combined descending, car.Name ascending
-                        select new {
-                            car.Combined,
-                            car.Name,
-                            car.Year,
-                            manufacturer.HeadQuarters
-                        };
+                        group car by car.Manufacturer.ToUpper() into manufacturer
+                        orderby manufacturer.Key
+                        select manufacturer;
 
-            //Join Method With extension method syntax
+            var query2 = cars.GroupBy(c => c.Manufacturer.ToUpper())
+                             .OrderBy(g => g.Key);
+                         
+                
 
-            var query2 = cars.Join(manufacturers,
-                              c => new { c.Manufacturer, c.Year },
-                              m => new { Manufacturer = m.Name, m.Year }, (c, m) =>
-                               new
-                               {
-                                   Car = c,
-                                   Manufacturer = m
-
-                        //Creating Personalized anonymous object
-                                /* c.Combined,
-                                   c.Name,
-                                   c.Year,
-                                   m.HeadQuarters*/
-                               })
-                             .OrderByDescending(c => c.Car.Combined)
-                             .ThenBy(c => c.Car.Name);
-
-
-            foreach (var car in query2.Take(10))
+            foreach (var group in query2)
             {
-                Console.WriteLine($"{car.Manufacturer.HeadQuarters} : {car.Car.Name} : {car.Car.Year} : {car.Car.Combined}");
-            }           
+                Console.WriteLine(group.Key);
+                foreach (var car in group.OrderByDescending(x=>x.Combined).Take(2))
+                {
+                    Console.WriteLine($"\t{car.Name} : {car.Combined}");
+                }
+            }
+
+            
         }
 
         
