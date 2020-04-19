@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Cars
 {
@@ -12,8 +13,33 @@ namespace Cars
     {
         static void Main(string[] args)
         {
-            var cars = ProcessCars("fuel.csv");
-            var manufacturers = ProcessManufacturers("manufacturers.csv");
+            CreateXml();
+
+            //Working with ForEach
+
+
+            /*foreach (var record in records)
+            {
+                var car = new XElement("Car",
+                                new XAttribute("Name", record.Name),
+                                new XAttribute("Combined", record.Combined),
+                                new XAttribute("Manufacturer",record.Manufacturer));
+                                
+
+                *//*car.Add(name);
+                 * 
+                car.Add(combined);*//*
+                cars.Add(car);
+            }*/
+
+
+
+            /*
+             * **********************
+             * Agregate Linq  implementation method 
+             * ************************
+             * 
+             * var manufacturers = ProcessManufacturers("manufacturers.csv");
 
             var query = from car in cars
                         group car by car.Manufacturer into carGroup
@@ -50,7 +76,7 @@ namespace Cars
                 Console.WriteLine(result.Name);
                 Console.WriteLine($"\t Max: {result.Max} \n\t Min: {result.Min} \n\t Avr:{result.Average :N1}");
             }
-
+*/
 
             /*
              * *********************************************
@@ -114,6 +140,22 @@ namespace Cars
 
         }
 
+        private static void CreateXml()
+        {
+            var records = ProcessCars("fuel.csv");
+            var document = new XDocument();
+            var cars = new XElement("Cars",
+                                from record in records
+                                select new XElement("Car",
+                                    new XAttribute("Name", record.Name),
+                                    new XAttribute("Combined", record.Combined),
+                                    new XAttribute("Manufacturer", record.Manufacturer))
+
+            );
+
+            document.Add(cars);
+            document.Save("fuel.xml");
+        }
 
         private static List<Car> ProcessCars(string path)
         {
