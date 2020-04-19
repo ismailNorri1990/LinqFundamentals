@@ -21,8 +21,10 @@ namespace Cars
 
         private static void QueryXml()
         {
+            var ns = (XNamespace)"http://pluralsignt.com/cars/2016";
+            var es = (XNamespace)"http://pluralsignt.com/cars/2016/es";
             var document = XDocument.Load("fuel.xml");
-            var query = from element in document.Element("Cars").Elements("Car")
+            var query = from element in document.Element(ns + "Cars").Elements( es + "Car")
             where element.Attribute("Manufacturer").Value == "BMW"
             select element.Attribute("Name").Value;
 
@@ -38,16 +40,19 @@ namespace Cars
         private static void CreateXml()
         {
             var records = ProcessCars("fuel.csv");
+            var ns = (XNamespace)"http://pluralsignt.com/cars/2016";
+            var es = (XNamespace)"http://pluralsignt.com/cars/2016/es";
             var document = new XDocument();
-            var cars = new XElement("Cars",
+            var cars = new XElement( ns + "Cars",
                                 from record in records
-                                select new XElement("Car",
+                                select new XElement( es+"Car",
                                     new XAttribute("Name", record.Name),
                                     new XAttribute("Combined", record.Combined),
                                     new XAttribute("Manufacturer", record.Manufacturer))
 
             );
 
+            cars.Add(new XAttribute(XNamespace.Xmlns + "es", es));
             document.Add(cars);
             document.Save("fuel.xml");
         }
