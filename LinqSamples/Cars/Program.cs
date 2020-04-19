@@ -28,10 +28,27 @@ namespace Cars
                         orderby result.Max descending
                         select result;
 
-            foreach (var result in query)
+            var query2 = cars.GroupBy(c => c.Manufacturer)
+                             .Select(g=>
+                             {
+                                 var results = g.Aggregate(new CarStatistics(),
+                                                               (acc, c) => acc.Accumulate(c),
+                                                               acc => acc.Compute());
+                                 return new
+                                 {
+                                     Name = g.Key,
+                                     Max = results.Max,
+                                     Min = results.Min,
+                                     Average = results.Average
+                                 };
+                             })
+                             .OrderByDescending(r=>r.Max);
+
+
+            foreach (var result in query2)
             {
                 Console.WriteLine(result.Name);
-                Console.WriteLine($"\t Max: {result.Max} \n\t Min: {result.Min} \n\t Avr:{result.Avg :N1}");
+                Console.WriteLine($"\t Max: {result.Max} \n\t Min: {result.Min} \n\t Avr:{result.Average :N1}");
             }
 
 
@@ -126,6 +143,37 @@ namespace Cars
 
             return query.ToList();
         }
+
+    }
+
+    public class CarStatistics
+    {
+
+        public CarStatistics()
+        {
+            Max = Int32.MinValue;
+            Min = Int32.MaxValue;
+        }
+        public CarStatistics Accumulate(Car car)
+        {
+            Count += 1;
+            Total += car.Combined;
+            Max = Math.Max(Max, car.Combined);
+            Min = Math.Min(Min, car.Combined);
+            return this;
+        }
+
+        public CarStatistics Compute()
+        {
+            Average = Total / Count;
+            return this;
+        }
+
+        public int Max { get; set; }
+        public int Min { get; set; }
+        public int Count { get; set; }
+        public int Total { get; set; }
+        public double Average { get; set; }
 
     }
 
